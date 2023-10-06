@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "jsEngine": "jsc",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -21,10 +22,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.vikash129.ImageClassificationApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f8931c48-9c2e-4b35-8d6f-4ae0a6c23bbd"
+      }
     }
   }
 }
