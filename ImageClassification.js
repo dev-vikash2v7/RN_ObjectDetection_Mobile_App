@@ -4,9 +4,8 @@ import * as tf from '@tensorflow/tfjs';
 import { decodeJpeg } from '@tensorflow/tfjs-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
-import * as mobilenet from '@tensorflow-models/mobilenet';
 import { ActivityIndicator } from 'react-native';
-
+import * as mobilenet from '@tensorflow-models/mobilenet'
 
 const ImageClassification = () => {
   const [loaded, setLoaded] = useState(null);
@@ -32,12 +31,15 @@ const ImageClassification = () => {
 
   useEffect(() => {
     const load = async () => {
+
       await tf.ready();
-      console.log('loaded tf--')
-      const model =  await mobilenet.load();
-      console.log('loaded mobilenet--')
+      console.log('successfully loaded tensroflow')
+      
+      const loadedModel = await mobilenet.load()
+      console.log('successfully loaded Mnist Model Model')
+
       setIsTfReady(true);
-      setModel(model)
+      setModel(loadedModel)
     }
     load()
   }, []);
@@ -61,16 +63,10 @@ const ImageClassification = () => {
 
       // Classify the tensor and show the result
       const prediction = await model.classify(imageTensor);
-      // prediction :  [
-        // {"className": "Bouvier des Flandres, Bouviers des Flandres", "probability": 0.09981340169906616}, 
-        // {"className": "parallel bars, bars", "probability": 0.0763639509677887}, 
-        // {"className": "military uniform", "probability": 0.07156502455472946}
-      // ]
-
 
       if (prediction && prediction.length > 0) {
         // console.log('prediction : ' ,prediction)
-        setResult(`Class : ${prediction[0].className}\nProbability(${prediction[0].probability.toFixed(3)}`)
+        setResult(`Class : ${prediction[0].className}\nProbability(${prediction[0].probability.toFixed(3)})`)
       }
     } catch (err) {
       console.log(err);
@@ -109,7 +105,7 @@ const ImageClassification = () => {
 </>
     }
 
-    {result !== '' && <Text style = {{fontSize :24 , marginTop : 5 , fontWeight:'bold'} }>{result}</Text>}
+    {result !== '' && <Text style = {{fontSize :2416 , marginTop : 5 , fontWeight:'bold'} }>{result}</Text>}
   </ScrollView>
   );
 };
