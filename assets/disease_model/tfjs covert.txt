@@ -1,0 +1,1 @@
+tensorflowjs_converter   --input_format keras --output_format tfjs_layers_model  --weight_shard_size_bytes 4096 cnn_potato_disease_model.h5 artifacts

@@ -12,7 +12,11 @@ const CropDiseasePredictionScreen = () => {
   const [selectedCrop, setSelectedCrop] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [model, setModel] = useState(null);
+  const [isTfReady, setIsTfReady] = useState(false);
+  const [result , setResult] = useState('')
 
+  const diseaseMapping = require('./assets/disease_model/myartifacts/crop_disease_mapping.json');
 
   // Ready tf setup and load custom tf models
   useEffect(() => {
@@ -22,34 +26,34 @@ const CropDiseasePredictionScreen = () => {
         await tf.ready();
         console.log('successfully loaded tensroflow')
         
-        const modelJson = require('./assets/models/artifacts/model.json');
+        const modelJson = require('./assets/disease_model/myartifacts/model.json');
+        
+        console.log('successfully loaded modeljson')
 
-        const modelWeights = [];
-        modelWeights.push(require('./assets/models/model_weights_1.bin'));
-        modelWeights.push(require('./assets/models/model_weights_2.bin'));
+        const modelWeights = await require('./assets/disease_model/myartifacts/group1-shard1of1.bin');
+        // modelWeights.push(  require('./assets/disease_model/cnn_potato_artifacts/group1-shard1of2.bin'));
+        // modelWeights.push( require('./assets/disease_model/cnn_potato_artifacts/group1-shard2of2.bin'));
+        console.log('successfully loaded weights')
 
-        const model = await tf.loadLayersModel(bundleResourceIO(modelJson , ...modelWeights));
-    
-        console.log('successfully loaded Mnist Model Model')
+
+        const model = await tf.loadLayersModel(bundleResourceIO(modelJson , modelWeights));
+
+        // console.log(modelWeights)
+        // console.log(model)
+
+        console.log('successfully loaded Potato Disease  Model')
         
         setIsTfReady(true);
         setModel(model);
       }
       catch(e){
-            console.log('eererere' , e)
+            console.log('Error --- : ' , e)
       }
     }
       load()
   }, []);
   
-  const cropsData =  [
-    {label : 'Rice' ,value: 'rice',},
-    { label : 'Wheat' ,value: 'wheat' },
-    { label : 'Potato' , value: 'potato' },
-    { label : 'Corn' , value: 'corn' },
-  ]
-
-
+  
 
   // Function to handle image selection from the gallery
   const handleGalleryPress = async () => {
@@ -100,7 +104,7 @@ const CropDiseasePredictionScreen = () => {
 
 
 /////////////////////////////////////////////
-async function predict_disease() {
+async function predict_disease(pickedImage) {
 
     // transform local image to base64
       const imgB64 = await FileSystem.readAsStringAsync(pickedImage, {
@@ -109,29 +113,29 @@ async function predict_disease() {
   
       const imgBuffer = tf.util.encodeString(imgB64, 'base64').buffer;
 
-      const raw = new Uint8Array(imgBuffer)
+      const raw = new Uint8Array(imgBuffer);
       const imageTensor = decodeJpeg(raw);
 
       //resize the image
-      const resized = tf.image.resizeBilinear(imageTensor, [224, 224 ]).toFloat();
+      const resized = tf.image.resizeBilinear(imageTensor, [256, 256 ]);
       
       //normalize;
       const scalar = tf.scalar(255)
       const tensorScaled = resized.div(scalar)
 
      
-      //final shape of the rensor
-      const img = tf.reshape(tensorScaled, [1,224,224 , 3])
+      //final shape of the tensor
+      const img = tf.reshape(tensorScaled, [1,256,256 , 3])
       
-      console.log("tensorScaled.shape : " , tensorScaled.shape)
-      console.log("resized.shape : " , resized.shape)
-      console.log("grayscaleImage.shape : " , grayscaleImage.shape)
-      console.log("img.shape : " , img.shape)
+      // console.log("tensorScaled.shape : " , tensorScaled.shape)
+      // console.log("resized.shape : " , resized.shape)
+      // console.log("img.shape : " , img.shape)
 
       const predictions = model.predict(img);
-      const disease = predictions.argMax(1).dataSync()[0];
-  
-  return disease
+      const disease_index = predictions.argMax(1).dataSync()[0];
+
+      const disease = diseaseMapping['potato'][disease_index]
+       return disease
   }
 
 
@@ -143,7 +147,10 @@ const handleSubmit = async () =>{
   const {uri } = selectedImage
 
   try {
-    const disease = await predict_disease() ;
+    const disease = await predict_disease(uri) ;
+    console.log('DISEASE : ' , disease)
+    setResult(disease)
+    
   }
   catch(e){
 console.log('error ; ' , e)
@@ -159,6 +166,8 @@ console.log('error ; ' , e)
   return (
 
     <View style={styles.container}>
+
+    {isTfReady ? 
 
   <ScrollView>
 
@@ -217,7 +226,15 @@ console.log('error ; ' , e)
 {errorMessage &&
               <ErrorPopup message={errorMessage} onClose={()=>setErrorMessage('')} />
             }
+{
+  result && 
+  <Text style={{marginTop:5 , fontSize : 14 , fontWeight:'bold'}}> Disease : {result} </Text>
+}
 </ScrollView>
+
+: 
+<Text style = {{justifyContent :'center' ,'alignItems' :'center'}}>Loading Model</Text>
+}
 
 
     </View>

@@ -24,8 +24,8 @@ const MnistClassifier = () => {
         await tf.ready();
         console.log('successfully loaded tensroflow')
         
-        const modelJson = require('./assets/models/artifacts/model.json');
-        const modelWeights = await require('./assets/models/artifacts/group1-shard1of1.bin')
+        const modelJson = require('./assets/mnist_model/artifacts/model.json');
+        const modelWeights = await require('./assets/mnist_model/artifacts/group1-shard1of1.bin')
 
         const model = await tf.loadLayersModel(bundleResourceIO(modelJson , modelWeights));
     
